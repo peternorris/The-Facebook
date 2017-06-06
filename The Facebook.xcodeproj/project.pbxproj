@@ -15,6 +15,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		10B07B9D1EE726CA001D14CB /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = "The Facebook/README.md"; sourceTree = "<group>"; };
 		9910CB851EE72263006AC4AF /* The Facebook.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "The Facebook.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		9910CB881EE72263006AC4AF /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		9910CB8A1EE72263006AC4AF /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -38,6 +39,7 @@
 		9910CB7C1EE72263006AC4AF = {
 			isa = PBXGroup;
 			children = (
+				10B07B9D1EE726CA001D14CB /* README.md */,
 				9910CB871EE72263006AC4AF /* The Facebook */,
 				9910CB861EE72263006AC4AF /* Products */,
 			);
@@ -312,6 +314,7 @@
 				9910CB991EE72263006AC4AF /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
