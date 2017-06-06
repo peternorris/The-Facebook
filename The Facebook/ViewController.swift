@@ -8,6 +8,8 @@
 
 import UIKit
 
+import Vision
+
 class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
     @IBOutlet var imageView: UIImageView!
@@ -26,6 +28,29 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         picker.dismiss(animated: true, completion: nil)
         
         self.imageView.image = image
+        
+        self.findFace()
+    }
+    
+    func findFace() {
+        if let cgImage = self.imageView.image?.cgImage {
+            let requestHandler = VNImageRequestHandler.init(cgImage: cgImage, options:[:])
+            let faceRequest = VNDetectFaceRectanglesRequest.init(completionHandler: { (self, error) in
+                if (error != nil) {
+                    print("error: \(String(describing: error))")
+                } else {
+                    let observation = self.results?.first as! VNFaceObservation
+                    print("observation: \(observation)")
+                    print("observation landmarks: \(String(describing: observation.landmarks))")
+                }
+            })
+            
+            do {
+                try requestHandler.perform([faceRequest])
+            } catch {
+                print("error performing request")
+            }
+        }
     }
 
     override func viewDidLoad() {
