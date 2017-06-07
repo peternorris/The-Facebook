@@ -39,9 +39,13 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
                 if (error != nil) {
                     print("error: \(String(describing: error))")
                 } else {
-                    let observation = self.results?.first as! VNFaceObservation
-                    print("observation: \(observation)")
-                    print("observation landmarks: \(String(describing: observation.landmarks))")
+                    if self.results?.isEmpty == false, let resultsArray = self.results {
+                        let observation = resultsArray.first as! VNFaceObservation
+                        print("observation: \(observation)")
+                        print("observation landmarks: \(String(describing: observation.landmarks))")
+                    } else {
+                        print("No Face Detected")
+                    }
                 }
             })
             
