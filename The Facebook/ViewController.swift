@@ -97,24 +97,13 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
             
             let rectangle = CGRect(x: x, y: y, width: width, height: height)
             
-            //let heightSpan = floor(height / 2 - rectangle.size.height / 2)
-            //let widthSpan = floor(width / 2 - rectangle.size.width / 2)
-            
-            UIColor.green.setFill()
-            UIRectFill(rectangle)
-            
-            // fill outer rect
-            //UIColor(red: 0, green: 0, blue: 0, alpha: 0.5).set()
-//            UIRectFill(rectangle)
-            
-            // fill inner border
-            //UIColor(red: 1, green: 1, blue: 1, alpha: 0.5).set()
-//            UIColor.clear.setFill()
-//            UIRectFill(CGRect(x: x + 10, y: y + 10, width: width-20, height: height-20))
-            
-            // fill inner rect
-            //UIColor.clear.set()
-            //UIRectFill(CGRect(x: widthSpan, y: heightSpan, width: rectangle.size.width, height: rectangle.size.height))
+            if let context = UIGraphicsGetCurrentContext() {
+                context.setFillColor(UIColor.black.cgColor)
+                context.setStrokeColor(UIColor.red.cgColor)
+                context.setLineWidth(5)
+                context.addRect(rectangle)
+                context.drawPath(using: .stroke)
+            }
             
             let newImage = UIGraphicsGetImageFromCurrentImageContext()
             UIGraphicsEndImageContext()
