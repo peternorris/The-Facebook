@@ -57,7 +57,6 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
                             let box = observation.boundingBox
                             faceBoxes.append(FaceCube(x: box.origin.x, y: box.origin.y, width: box.size.width, height: box.size.height))
                         }
-                        //completionHandler(FaceCube(x: box.origin.x, y: box.origin.y, width: box.size.width, height: box.size.height))
                         completionHandler(faceBoxes)
                     } else {
                         print("No Faces Detected")
@@ -84,13 +83,17 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
             image?.draw(at: .zero)
             
             let x = coordinates.x * (imageSize?.width)!
+            let y = coordinates.y * (imageSize?.height)!
             let width = coordinates.width * (imageSize?.width)!
             let height = coordinates.height * (imageSize?.height)!
-            let y = coordinates.y > 0 ? height - (coordinates.y * (imageSize?.height)!) : coordinates.y * (imageSize?.height)!
             
             let rectangle = CGRect(x: x, y: y, width: width, height: height)
             
             if let context = UIGraphicsGetCurrentContext() {
+                
+                context.translateBy(x: 0, y: (imageSize?.height)!)
+                context.scaleBy(x: 1, y: -1)
+                
                 context.setFillColor(UIColor.black.cgColor)
                 context.setStrokeColor(UIColor.red.cgColor)
                 context.setLineWidth(5)
@@ -108,6 +111,8 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
+        
+        self.imageView.contentMode = .scaleAspectFit
     }
 
     override func didReceiveMemoryWarning() {
