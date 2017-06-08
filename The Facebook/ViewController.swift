@@ -20,6 +20,8 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     
     @IBOutlet var imageView: UIImageView!
     @IBOutlet var button: UIButton!
+    @IBOutlet var spinner: UIActivityIndicatorView!
+    @IBOutlet var noFaceLabel: UILabel!
     
     @IBAction func lauchImagePicker() {
         let imagePicker = UIImagePickerController()
@@ -33,10 +35,51 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         let image = info[UIImagePickerControllerOriginalImage] as! UIImage
         picker.dismiss(animated: true, completion: nil)
         
+        if self.noFaceLabel.textColor == .red {
+            self.noFaceLabel.textColor = .white
+        }
+        
+        self.imageView.backgroundColor = .white
         self.imageView.image = image
         
-        self.findFace() { (faceBoxes: [FaceCube]) in
-            self.drawBoxes(faceBoxes)
+        self.spinner.color = .darkGray
+        self.spinner.startAnimating()
+        
+        DispatchQueue.main.async {
+            self.findFace() { (faceBoxes: [FaceCube]) in
+                
+                self.spinner.stopAnimating()
+                self.spinner.color = .white
+                
+                if faceBoxes.count > 0 {
+                    self.drawBoxes(faceBoxes)
+                } else {
+                    self.noFaceLabel.textColor = .red
+                }
+            }
+        }
+    }
+    
+    func findFace(_ fileURL: URL, completionHandler: @escaping ([FaceCube]) -> Void) {
+        let detectionRequest = VNDetectFaceRectanglesRequest()
+        let requestHandler = VNImageRequestHandler(url: fileURL, options: [:])
+        
+        do {
+            try requestHandler.perform([detectionRequest])
+        } catch {
+            print("error performing request")
+        }
+        
+        var faceBoxes: [FaceCube] = []
+        
+        for observation in detectionRequest.results as! [VNFaceObservation] {
+            print("observation: \(observation)")
+            print("observation boundingBox: \(String(describing: observation.boundingBox))")
+            
+            let box = observation.boundingBox
+            faceBoxes.append(FaceCube(x: box.origin.x, y: box.origin.y, width: box.size.width, height: box.size.height))
+            
+            completionHandler(faceBoxes)
         }
     }
     
@@ -60,6 +103,7 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
                         completionHandler(faceBoxes)
                     } else {
                         print("No Faces Detected")
+                        completionHandler([])
                     }
                 }
             })
@@ -112,7 +156,9 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
         
+        self.noFaceLabel.textColor = .white
         self.imageView.contentMode = .scaleAspectFit
+        self.spinner.color = .white
     }
 
     override func didReceiveMemoryWarning() {
