@@ -109,12 +109,14 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         
         DispatchQueue.main.async {
             self.findEyesInImage() { (eyeRects: [CGRect]) in
-                self.addEyes(eyeRects)
+                if eyeRects.count > 0 {
+                    self.addEyes(eyeRects)
+                    
+                    self.spinner.stopAnimating()
+                    self.spinner.color = .white
+                }
             }
         }
-        
-        self.spinner.stopAnimating()
-        self.spinner.color = .white
     }
     
     func findEyesInImage(completionHandler: @escaping ([CGRect]) -> Void) {
@@ -163,17 +165,10 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
                             self.eyeRectArray.append(rightEyeRect)
                             
                             completionHandler(self.eyeRectArray)
-                            
-                            //print("observation: \(observation)")
-                            //                            print("observation leftEye 0: \(String(describing: observation.landmarks?.leftPupil?.point(at: 0)))")
-                            //                            print("observation leftEye 1: \(String(describing: observation.landmarks?.leftEye?.point(at: 1)))")
-                            //                            print("observation leftEye 2: \(String(describing: observation.landmarks?.leftEye?.point(at: 2)))")
-                            //                            print("observation leftEye 3: \(String(describing: observation.landmarks?.leftEye?.point(at: 3)))")
-                            //                            print("observation leftEye 4: \(String(describing: observation.landmarks?.leftEye?.point(at: 4)))")
-                            //                            print("observation leftEye 5: \(String(describing: observation.landmarks?.leftEye?.point(at: 5)))")
-                            //                            print("observation leftEye 6: \(String(describing: observation.landmarks?.leftEye?.point(at: 6)))")
-                            //                            print("observation leftEye 7: \(String(describing: observation.landmarks?.leftEye?.point(at: 7)))")
                         }
+                    } else {
+                        print("No Eyes Detected")
+                        completionHandler([])
                     }
                 }
             })
