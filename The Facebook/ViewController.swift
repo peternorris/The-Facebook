@@ -16,12 +16,18 @@ struct FaceCube {
     var height: CGFloat
 }
 
-class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UIScrollViewDelegate {
     
     @IBOutlet var imageView: UIImageView!
     @IBOutlet var button: UIButton!
     @IBOutlet var spinner: UIActivityIndicatorView!
     @IBOutlet var noFaceLabel: UILabel!
+    @IBOutlet var scrollView: UIScrollView!
+    
+    var coordinatesArray: [FaceCube] = []
+    var rectArray: [CGRect] = []
+    var faceZoomRect: CGRect!
+    
     
     @IBAction func lauchImagePicker() {
         let imagePicker = UIImagePickerController()
@@ -86,19 +92,21 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     func findFace(completionHandler: @escaping ([FaceCube]) -> Void) {
         if let cgImage = self.imageView.image?.cgImage {
             let requestHandler = VNImageRequestHandler.init(cgImage: cgImage, options:[:])
-            let faceRequest = VNDetectFaceRectanglesRequest.init(completionHandler: { (self, error) in
+            let faceRequest = VNDetectFaceRectanglesRequest.init(completionHandler: { (request, error) in
                 if (error != nil) {
                     print("error: \(String(describing: error))")
                 } else {
                     var faceBoxes: [FaceCube] = []
-                    if self.results?.isEmpty == false, let resultsArray = self.results {
+                    if request.results?.isEmpty == false, let resultsArray = request.results {
                         for tmpObservation in resultsArray {
                             let observation = tmpObservation as! VNFaceObservation
                             print("observation: \(observation)")
                             print("observation boundingBox: \(String(describing: observation.boundingBox))")
                             
                             let box = observation.boundingBox
-                            faceBoxes.append(FaceCube(x: box.origin.x, y: box.origin.y, width: box.size.width, height: box.size.height))
+                            let faceCube = FaceCube(x: box.origin.x, y: box.origin.y, width: box.size.width, height: box.size.height)
+                            faceBoxes.append(faceCube)
+                            self.coordinatesArray.append(faceCube)
                         }
                         completionHandler(faceBoxes)
                     } else {
@@ -132,6 +140,7 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
             let height = coordinates.height * (imageSize?.height)!
             
             let rectangle = CGRect(x: x, y: y, width: width, height: height)
+            self.rectArray.append(rectangle)
             
             if let context = UIGraphicsGetCurrentContext() {
                 
@@ -151,7 +160,7 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
             self.imageView.image = newImage
         }
     }
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
@@ -160,12 +169,63 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         self.imageView.contentMode = .scaleAspectFit
         self.spinner.color = .white
     }
-
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
-
-
+    
+    func viewForZooming(in scrollView: UIScrollView) -> UIView?{
+        return self.imageView
+    }
+    
+    @IBAction func handleDoubleTapScrollView(recognizer: UITapGestureRecognizer) {
+        
+        var relativePoint = recognizer.view?.convert(recognizer.location(in: recognizer.view), to: self.imageView)
+        //relativePoint?.y = self.imageView.frame.size.height
+           //var p = self.scrollView.convertPoint(recognizer.location(in: recognizer.view), to: self.imageView)
+        for rect in self.rectArray {
+            print(rect)
+            
+            print(recognizer.location(in: recognizer.view))
+            
+            
+            let isPointInFrame = rect.contains(relativePoint!)
+            if(isPointInFrame){
+                faceZoomRect = rect
+            }
+            
+            
+            
+            // 1. Extract rects from array - NSRect struct
+            // 2. Check if the tapped point is in any of tha array rects
+            // 3. If the condition is true - Return the right rect object, else nothing
+            // 4. Get the rect and zoom in
+        }
+        
+        if scrollView.zoomScale == 1 {
+            if((faceZoomRect) != nil){
+                scrollView.zoom(to: faceZoomRect, animated: true)
+            }
+            else{
+                scrollView.zoom(to: zoomRectForScale(scale: scrollView.maximumZoomScale, center: recognizer.location(in: recognizer.view)), animated: true)
+            }
+            
+        } else {
+            scrollView.setZoomScale(1, animated: true)
+            //scrollView.zoom(to: faceZoomRect, animated: true)
+        }
+    }
+    
+    func zoomRectForScale(scale: CGFloat, center: CGPoint) -> CGRect {
+        var zoomRect = CGRect.zero
+        zoomRect.size.height = imageView.frame.size.height / scale
+        zoomRect.size.width  = imageView.frame.size.width  / scale
+        let newCenter = imageView.convert(center, from: scrollView)
+        zoomRect.origin.x = newCenter.x - (zoomRect.size.width / 2.0)
+        zoomRect.origin.y = newCenter.y - (zoomRect.size.height / 2.0)
+        return zoomRect
+    }
+    
 }
 

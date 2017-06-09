@@ -25,30 +25,44 @@
                                 <rect key="frame" x="16" y="20" width="343" height="647"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="No Face Detected!" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="mRh-Cf-OBy">
-                                        <rect key="frame" x="100.5" y="40" width="142.5" height="20.5"/>
+                                        <rect key="frame" x="100.5" y="40" width="142" height="20.5"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <color key="textColor" red="1" green="0.2221820548" blue="0.17004713220000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="Bb4-lN-PIu">
+                                    <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" ambiguous="YES" maximumZoomScale="10" translatesAutoresizingMaskIntoConstraints="NO" id="Yxb-ma-FYV">
                                         <rect key="frame" x="21.5" y="112.5" width="300" height="300"/>
-                                        <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
-                                        <constraints>
-                                            <constraint firstAttribute="width" constant="300" id="MaQ-OB-Jav"/>
-                                            <constraint firstAttribute="height" constant="300" id="q66-lC-atL"/>
-                                        </constraints>
-                                    </imageView>
+                                        <subviews>
+                                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Bb4-lN-PIu">
+                                                <rect key="frame" x="-0.4202755905490676" y="1.2066929133870872" width="299.99999999999977" height="299.99999999999994"/>
+                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
+                                                <gestureRecognizers/>
+                                            </imageView>
+                                        </subviews>
+                                        <gestureRecognizers/>
+                                        <connections>
+                                            <outlet property="delegate" destination="BYZ-38-t0r" id="0C4-fg-I6l"/>
+                                            <outletCollection property="gestureRecognizers" destination="Fm8-C7-hXT" appends="YES" id="1b0-nP-hwX"/>
+                                        </connections>
+                                    </scrollView>
                                     <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" style="gray" translatesAutoresizingMaskIntoConstraints="NO" id="ZMa-Kb-qK8">
-                                        <rect key="frame" x="161.5" y="465" width="20" height="20"/>
+                                        <rect key="frame" x="161.5" y="464.5" width="20" height="20"/>
                                     </activityIndicatorView>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="D3y-Qk-5kB">
-                                        <rect key="frame" x="148.5" y="537" width="46" height="30"/>
+                                        <rect key="frame" x="148.5" y="536.5" width="46" height="30.5"/>
                                         <state key="normal" title="Import"/>
                                         <connections>
                                             <action selector="lauchImagePicker" destination="BYZ-38-t0r" eventType="touchUpInside" id="aWo-gh-rol"/>
                                         </connections>
                                     </button>
                                 </subviews>
+                                <gestureRecognizers/>
+                                <constraints>
+                                    <constraint firstItem="Yxb-ma-FYV" firstAttribute="top" secondItem="mRh-Cf-OBy" secondAttribute="bottom" constant="52" id="Fb5-BJ-swj"/>
+                                    <constraint firstItem="ZMa-Kb-qK8" firstAttribute="top" secondItem="Yxb-ma-FYV" secondAttribute="bottom" constant="52" id="VNr-jI-8en"/>
+                                    <constraint firstItem="mRh-Cf-OBy" firstAttribute="leading" secondItem="Yxb-ma-FYV" secondAttribute="trailing" constant="-221" id="myh-3s-HSg"/>
+                                </constraints>
                                 <edgeInsets key="layoutMargins" top="40" left="8" bottom="80" right="8"/>
                             </stackView>
                         </subviews>
@@ -64,10 +78,16 @@
                         <outlet property="button" destination="D3y-Qk-5kB" id="SHM-Te-1vP"/>
                         <outlet property="imageView" destination="Bb4-lN-PIu" id="FWR-oN-KGC"/>
                         <outlet property="noFaceLabel" destination="mRh-Cf-OBy" id="0tk-qS-DE5"/>
+                        <outlet property="scrollView" destination="Yxb-ma-FYV" id="wdc-bJ-biH"/>
                         <outlet property="spinner" destination="ZMa-Kb-qK8" id="2jS-Fb-2IP"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
+                <tapGestureRecognizer id="Fm8-C7-hXT">
+                    <connections>
+                        <action selector="handleDoubleTapScrollViewWithRecognizer:" destination="BYZ-38-t0r" id="9Xk-xd-Fl6"/>
+                    </connections>
+                </tapGestureRecognizer>
             </objects>
         </scene>
     </scenes>
