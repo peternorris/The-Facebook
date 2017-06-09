@@ -60,29 +60,6 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         }
     }
     
-    func findFace(_ fileURL: URL, completionHandler: @escaping ([FaceCube]) -> Void) {
-        let detectionRequest = VNDetectFaceRectanglesRequest()
-        let requestHandler = VNImageRequestHandler(url: fileURL, options: [:])
-        
-        do {
-            try requestHandler.perform([detectionRequest])
-        } catch {
-            print("error performing request")
-        }
-        
-        var faceBoxes: [FaceCube] = []
-        
-        for observation in detectionRequest.results as! [VNFaceObservation] {
-            print("observation: \(observation)")
-            print("observation boundingBox: \(String(describing: observation.boundingBox))")
-            
-            let box = observation.boundingBox
-            faceBoxes.append(FaceCube(x: box.origin.x, y: box.origin.y, width: box.size.width, height: box.size.height))
-            
-            completionHandler(faceBoxes)
-        }
-    }
-    
     func findFace(completionHandler: @escaping ([FaceCube]) -> Void) {
         if let cgImage = self.imageView.image?.cgImage {
             let requestHandler = VNImageRequestHandler.init(cgImage: cgImage, options:[:])
