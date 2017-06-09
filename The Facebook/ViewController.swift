@@ -118,7 +118,12 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         
         DispatchQueue.main.async {
             self.findEyesInImage() { (eyeRects: [EyeCube]) in
-                self.addEyes(eyeRects)
+                if eyeRects.count > 0 {
+                    self.addEyes(eyeRects)
+                    
+                    self.spinner.stopAnimating()
+                    self.spinner.color = .white
+                }
             }
         }
     }
