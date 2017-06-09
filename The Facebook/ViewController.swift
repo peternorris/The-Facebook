@@ -16,6 +16,12 @@ struct FaceCube {
     var height: CGFloat
 }
 
+struct EyeCube {
+    var faceRect: CGRect
+    var leftEyeRect: CGRect
+    var rightEyeRect: CGRect
+}
+
 class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
     @IBOutlet var imageView: UIImageView!
@@ -24,7 +30,7 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     @IBOutlet var noFaceLabel: UILabel!
     @IBOutlet var eyeButton: UIButton!
     
-    var eyeRectArray: [CGRect] = []
+    var eyeRectArray: [EyeCube] = []
     
     @IBAction func lauchImagePicker() {
         let imagePicker = UIImagePickerController()
@@ -49,6 +55,8 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         self.spinner.startAnimating()
         
         DispatchQueue.main.async {
+            self.eyeRectArray.removeAll()
+            
             self.findFace() { (faceBoxes: [FaceCube]) in
                 
                 self.spinner.stopAnimating()
@@ -83,6 +91,7 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
                             //print("observation boundingBox: \(String(describing: observation.boundingBox))")
                             
                             let box = observation.boundingBox
+                            
                             let faceCube = FaceCube(x: box.origin.x, y: box.origin.y, width: box.size.width, height: box.size.height)
                             faceBoxes.append(faceCube)
                         }
@@ -108,7 +117,7 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         self.spinner.startAnimating()
         
         DispatchQueue.main.async {
-            self.findEyesInImage() { (eyeRects: [CGRect]) in
+            self.findEyesInImage() { (eyeRects: [EyeCube]) in
                 self.addEyes(eyeRects)
             }
         }
@@ -117,7 +126,7 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         self.spinner.color = .white
     }
     
-    func findEyesInImage(completionHandler: @escaping ([CGRect]) -> Void) {
+    func findEyesInImage(completionHandler: @escaping ([EyeCube]) -> Void) {
         if let cgImage = self.imageView.image?.cgImage {
             let requestHandler = VNImageRequestHandler.init(cgImage: cgImage, options:[:])
             let eyesRequest = VNDetectFaceLandmarksRequest.init(completionHandler: { (request, error) in
@@ -127,6 +136,7 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
                     if request.results?.isEmpty == false, let resultsArray = request.results {
                         for tmpObservation in resultsArray {
                             let observation = tmpObservation as! VNFaceObservation
+                            
                             
                             // Left Eye
                             let leftEyePointsCount = observation.landmarks?.leftEye?.pointCount
@@ -143,7 +153,6 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
                             }
                             
                             let leftEyeRect = leftEyePath.cgPath.boundingBoxOfPath
-                            self.eyeRectArray.append(leftEyeRect)
                             
                             // Right Eye
                             let rightEyePointsCount = observation.landmarks?.rightEye?.pointCount
@@ -160,7 +169,9 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
                             }
                             
                             let rightEyeRect = rightEyePath.cgPath.boundingBoxOfPath
-                            self.eyeRectArray.append(rightEyeRect)
+                            
+                            let eyeCube = EyeCube(faceRect: observation.boundingBox, leftEyeRect: leftEyeRect, rightEyeRect: rightEyeRect)
+                            self.eyeRectArray.append(eyeCube)
                             
                             completionHandler(self.eyeRectArray)
                             
@@ -222,9 +233,89 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         }
     }
     
-    func addEyes(_ eyeRects: [CGRect]) {
-        
+    func addEyes(_ eyeCubes: [EyeCube]) {
+        for eyeCube in eyeCubes {
+            let faceRect = eyeCube.faceRect
+            let leftEyeRect = eyeCube.leftEyeRect
+            let rightEyeRect = eyeCube.rightEyeRect
+            
+            
+            self.drawEyeRect(leftEyeRect,faceRect: faceRect)
+            self.drawEyeRect(rightEyeRect,faceRect: faceRect)
+        }
     }
+    
+    func drawEyeRect (_ rect: CGRect, faceRect: CGRect) {
+        
+        let image = self.imageView.image
+        
+        let imageSize = image?.size
+        let scale: CGFloat = 0
+        UIGraphicsBeginImageContextWithOptions(imageSize!, false, scale)
+        
+        image?.draw(at: .zero)
+        
+        if let context = UIGraphicsGetCurrentContext() {
+            let faceX = faceRect.origin.x * (imageSize?.width)!
+            let faceY = faceRect.origin.y * (imageSize?.height)!
+            let faceWidth = faceRect.size.width * (imageSize?.width)!
+            let faceHeight = faceRect.size.height * (imageSize?.height)!
+            
+            let convertedFaceRect = CGRect(x: faceX, y: faceY, width: faceWidth, height: faceHeight)
+            
+            let x = (rect.origin.x * (convertedFaceRect.width)) + convertedFaceRect.origin.x
+            let y = (rect.origin.y * (convertedFaceRect.height)) + convertedFaceRect.origin.y
+            let width = rect.size.width * (convertedFaceRect.width)
+            let height = rect.size.height * (convertedFaceRect.height)
+            
+            
+            let rectangle = CGRect(x: x, y: y, width: width, height: height)
+            rectangle.insetBy(dx: 10, dy: 10)
+            
+            context.translateBy(x: 0, y: (imageSize?.height)!)
+            context.scaleBy(x: 1, y: -1)
+            
+            context.setFillColor(UIColor.orange.cgColor)
+            context.setStrokeColor(UIColor.orange.cgColor)
+            context.setLineWidth(5)
+            context.addRect(rectangle)
+            context.fillEllipse(in: rectangle)
+//            context.drawPath(using: .fill)
+        }
+        
+        let newImage = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        
+        self.imageView.image = newImage
+    }
+    
+    func resizeImage(image: UIImage, targetSize: CGSize) -> UIImage? {
+        let size = image.size
+        
+        let widthRatio  = targetSize.width  / image.size.width
+        let heightRatio = targetSize.height / image.size.height
+        
+        // Figure out what our orientation is, and use that to form the rectangle
+        var newSize: CGSize
+        if(widthRatio > heightRatio) {
+            newSize = CGSize(width: size.width * heightRatio, height: size.height * heightRatio)
+        } else {
+            newSize = CGSize(width: size.width * widthRatio, height: size.height * widthRatio)
+        }
+        
+        // This is the rect that we've calculated out and this is what is actually used below
+        let rect = CGRect(x: 0, y: 0, width: newSize.width, height: newSize.height)
+        
+        // Actually do the resizing to the rect using the ImageContext stuff
+        UIGraphicsBeginImageContextWithOptions(newSize, false, 1.0)
+        image.draw(in:rect)
+        
+        let newImage = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        
+        return newImage
+    }
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
