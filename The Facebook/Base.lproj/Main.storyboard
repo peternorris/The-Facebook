@@ -31,7 +31,7 @@
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="Bb4-lN-PIu">
-                                        <rect key="frame" x="21.5" y="112.5" width="300" height="300"/>
+                                        <rect key="frame" x="21.5" y="92" width="300" height="300"/>
                                         <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
                                         <constraints>
                                             <constraint firstAttribute="width" constant="300" id="MaQ-OB-Jav"/>
@@ -39,13 +39,20 @@
                                         </constraints>
                                     </imageView>
                                     <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" style="gray" translatesAutoresizingMaskIntoConstraints="NO" id="ZMa-Kb-qK8">
-                                        <rect key="frame" x="161.5" y="465" width="20" height="20"/>
+                                        <rect key="frame" x="161.5" y="424" width="20" height="20"/>
                                     </activityIndicatorView>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="D3y-Qk-5kB">
-                                        <rect key="frame" x="148.5" y="537" width="46" height="30"/>
+                                        <rect key="frame" x="148.5" y="475.5" width="46" height="30"/>
                                         <state key="normal" title="Import"/>
                                         <connections>
                                             <action selector="lauchImagePicker" destination="BYZ-38-t0r" eventType="touchUpInside" id="aWo-gh-rol"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="bde-gz-DV4">
+                                        <rect key="frame" x="156.5" y="537" width="30" height="30"/>
+                                        <state key="normal" title="👁"/>
+                                        <connections>
+                                            <action selector="findEyes" destination="BYZ-38-t0r" eventType="touchUpInside" id="9O4-WI-Scw"/>
                                         </connections>
                                     </button>
                                 </subviews>
@@ -62,6 +69,7 @@
                     </view>
                     <connections>
                         <outlet property="button" destination="D3y-Qk-5kB" id="SHM-Te-1vP"/>
+                        <outlet property="eyeButton" destination="bde-gz-DV4" id="mez-u1-grn"/>
                         <outlet property="imageView" destination="Bb4-lN-PIu" id="FWR-oN-KGC"/>
                         <outlet property="noFaceLabel" destination="mRh-Cf-OBy" id="0tk-qS-DE5"/>
                         <outlet property="spinner" destination="ZMa-Kb-qK8" id="2jS-Fb-2IP"/>

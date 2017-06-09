@@ -22,6 +22,9 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     @IBOutlet var button: UIButton!
     @IBOutlet var spinner: UIActivityIndicatorView!
     @IBOutlet var noFaceLabel: UILabel!
+    @IBOutlet var eyeButton: UIButton!
+    
+    var eyeRectArray: [CGRect] = []
     
     @IBAction func lauchImagePicker() {
         let imagePicker = UIImagePickerController()
@@ -51,10 +54,15 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
                 self.spinner.stopAnimating()
                 self.spinner.color = .white
                 
+                self.eyeButton.setTitle("👁", for: .normal)
+                self.eyeButton.isEnabled = true
+                
                 if faceBoxes.count > 0 {
                     self.drawBoxes(faceBoxes)
                 } else {
                     self.noFaceLabel.textColor = .red
+                    self.eyeButton.setTitle(" ", for: .normal)
+                    self.eyeButton.isEnabled = false
                 }
             }
         }
@@ -63,19 +71,20 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     func findFace(completionHandler: @escaping ([FaceCube]) -> Void) {
         if let cgImage = self.imageView.image?.cgImage {
             let requestHandler = VNImageRequestHandler.init(cgImage: cgImage, options:[:])
-            let faceRequest = VNDetectFaceRectanglesRequest.init(completionHandler: { (self, error) in
+            let faceRequest = VNDetectFaceRectanglesRequest.init(completionHandler: { (request, error) in
                 if (error != nil) {
                     print("error: \(String(describing: error))")
                 } else {
                     var faceBoxes: [FaceCube] = []
-                    if self.results?.isEmpty == false, let resultsArray = self.results {
+                    if request.results?.isEmpty == false, let resultsArray = request.results {
                         for tmpObservation in resultsArray {
                             let observation = tmpObservation as! VNFaceObservation
-                            print("observation: \(observation)")
-                            print("observation boundingBox: \(String(describing: observation.boundingBox))")
+                            //print("observation: \(observation)")
+                            //print("observation boundingBox: \(String(describing: observation.boundingBox))")
                             
                             let box = observation.boundingBox
-                            faceBoxes.append(FaceCube(x: box.origin.x, y: box.origin.y, width: box.size.width, height: box.size.height))
+                            let faceCube = FaceCube(x: box.origin.x, y: box.origin.y, width: box.size.width, height: box.size.height)
+                            faceBoxes.append(faceCube)
                         }
                         completionHandler(faceBoxes)
                     } else {
@@ -87,6 +96,90 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
             
             do {
                 try requestHandler.perform([faceRequest])
+            } catch {
+                print("error performing request")
+            }
+        }
+    }
+    
+    @IBAction func findEyes() {
+        
+        self.spinner.color = .darkGray
+        self.spinner.startAnimating()
+        
+        DispatchQueue.main.async {
+            self.findEyesInImage() { (eyeRects: [CGRect]) in
+                self.addEyes(eyeRects)
+            }
+        }
+        
+        self.spinner.stopAnimating()
+        self.spinner.color = .white
+    }
+    
+    func findEyesInImage(completionHandler: @escaping ([CGRect]) -> Void) {
+        if let cgImage = self.imageView.image?.cgImage {
+            let requestHandler = VNImageRequestHandler.init(cgImage: cgImage, options:[:])
+            let eyesRequest = VNDetectFaceLandmarksRequest.init(completionHandler: { (request, error) in
+                if (error != nil) {
+                    print("error: \(String(describing: error))")
+                } else {
+                    if request.results?.isEmpty == false, let resultsArray = request.results {
+                        for tmpObservation in resultsArray {
+                            let observation = tmpObservation as! VNFaceObservation
+                            
+                            // Left Eye
+                            let leftEyePointsCount = observation.landmarks?.leftEye?.pointCount
+                            let leftEyePath = UIBezierPath.init()
+                            
+                            for index in 0...(leftEyePointsCount! - 1) {
+                                let vectorPoint = observation.landmarks?.leftEye?.point(at: index)
+                                let point = CGPoint.init(x: CGFloat((vectorPoint?.x)!), y: CGFloat((vectorPoint?.y)!))
+                                if index == 0 {
+                                    leftEyePath.move(to:point)
+                                } else {
+                                    leftEyePath.addLine(to: point)
+                                }
+                            }
+                            
+                            let leftEyeRect = leftEyePath.cgPath.boundingBoxOfPath
+                            self.eyeRectArray.append(leftEyeRect)
+                            
+                            // Right Eye
+                            let rightEyePointsCount = observation.landmarks?.rightEye?.pointCount
+                            let rightEyePath = UIBezierPath.init()
+                            
+                            for index in 0...(rightEyePointsCount! - 1) {
+                                let vectorPoint = observation.landmarks?.rightEye?.point(at: index)
+                                let point = CGPoint.init(x: CGFloat((vectorPoint?.x)!), y: CGFloat((vectorPoint?.y)!))
+                                if index == 0 {
+                                    rightEyePath.move(to:point)
+                                } else {
+                                    rightEyePath.addLine(to: point)
+                                }
+                            }
+                            
+                            let rightEyeRect = rightEyePath.cgPath.boundingBoxOfPath
+                            self.eyeRectArray.append(rightEyeRect)
+                            
+                            completionHandler(self.eyeRectArray)
+                            
+                            //print("observation: \(observation)")
+                            //                            print("observation leftEye 0: \(String(describing: observation.landmarks?.leftPupil?.point(at: 0)))")
+                            //                            print("observation leftEye 1: \(String(describing: observation.landmarks?.leftEye?.point(at: 1)))")
+                            //                            print("observation leftEye 2: \(String(describing: observation.landmarks?.leftEye?.point(at: 2)))")
+                            //                            print("observation leftEye 3: \(String(describing: observation.landmarks?.leftEye?.point(at: 3)))")
+                            //                            print("observation leftEye 4: \(String(describing: observation.landmarks?.leftEye?.point(at: 4)))")
+                            //                            print("observation leftEye 5: \(String(describing: observation.landmarks?.leftEye?.point(at: 5)))")
+                            //                            print("observation leftEye 6: \(String(describing: observation.landmarks?.leftEye?.point(at: 6)))")
+                            //                            print("observation leftEye 7: \(String(describing: observation.landmarks?.leftEye?.point(at: 7)))")
+                        }
+                    }
+                }
+            })
+            
+            do {
+                try requestHandler.perform([eyesRequest])
             } catch {
                 print("error performing request")
             }
@@ -128,7 +221,11 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
             self.imageView.image = newImage
         }
     }
-
+    
+    func addEyes(_ eyeRects: [CGRect]) {
+        
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
@@ -136,13 +233,15 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         self.noFaceLabel.textColor = .white
         self.imageView.contentMode = .scaleAspectFit
         self.spinner.color = .white
+        self.eyeButton.setTitle(" ", for: .normal)
+        self.eyeButton.isEnabled = false
     }
-
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
-
-
+    
+    
 }
 

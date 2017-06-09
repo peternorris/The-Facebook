@@ -12,6 +12,7 @@
 		9910CB8E1EE72263006AC4AF /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9910CB8C1EE72263006AC4AF /* Main.storyboard */; };
 		9910CB901EE72263006AC4AF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9910CB8F1EE72263006AC4AF /* Assets.xcassets */; };
 		9910CB931EE72263006AC4AF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9910CB911EE72263006AC4AF /* LaunchScreen.storyboard */; };
+		9978826D1EEAFDA100AC96C8 /* daylite_icon.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 9978826C1EEAFDA100AC96C8 /* daylite_icon.jpg */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -23,6 +24,7 @@
 		9910CB8F1EE72263006AC4AF /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		9910CB921EE72263006AC4AF /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		9910CB941EE72263006AC4AF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		9978826C1EEAFDA100AC96C8 /* daylite_icon.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = daylite_icon.jpg; path = ../../../../Downloads/daylite_icon.jpg; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -62,6 +64,7 @@
 				9910CB8F1EE72263006AC4AF /* Assets.xcassets */,
 				9910CB911EE72263006AC4AF /* LaunchScreen.storyboard */,
 				9910CB941EE72263006AC4AF /* Info.plist */,
+				9978826C1EEAFDA100AC96C8 /* daylite_icon.jpg */,
 			);
 			path = "The Facebook";
 			sourceTree = "<group>";
@@ -127,6 +130,7 @@
 				9910CB931EE72263006AC4AF /* LaunchScreen.storyboard in Resources */,
 				9910CB901EE72263006AC4AF /* Assets.xcassets in Resources */,
 				9910CB8E1EE72263006AC4AF /* Main.storyboard in Resources */,
+				9978826D1EEAFDA100AC96C8 /* daylite_icon.jpg in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
