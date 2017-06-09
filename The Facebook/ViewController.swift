@@ -16,6 +16,12 @@ struct FaceCube {
     var height: CGFloat
 }
 
+struct EyeCube {
+    var faceRect: CGRect
+    var leftEyeRect: CGRect
+    var rightEyeRect: CGRect
+}
+
 class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UIScrollViewDelegate {
     
     @IBOutlet var imageView: UIImageView!
@@ -24,6 +30,8 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     @IBOutlet var noFaceLabel: UILabel!
     @IBOutlet var scrollView: UIScrollView!
     
+    var eyeRectArray: [EyeCube] = []
+
     //Status Texts
     let welcome = "Tap 'Select Image' to see the Vision API in play. 🤓"
     let working = "🤔 Working on your selected image...👓"
@@ -146,6 +154,125 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         }
     }
     
+    func findEyesInImage(completionHandler: @escaping ([EyeCube]) -> Void) {
+        if let cgImage = self.imageView.image?.cgImage {
+            let requestHandler = VNImageRequestHandler.init(cgImage: cgImage, options:[:])
+            let eyesRequest = VNDetectFaceLandmarksRequest.init(completionHandler: { (request, error) in
+                if (error != nil) {
+                    print("error: \(String(describing: error))")
+                } else {
+                    if request.results?.isEmpty == false, let resultsArray = request.results {
+                        for tmpObservation in resultsArray {
+                            let observation = tmpObservation as! VNFaceObservation
+                            
+                            
+                            // Left Eye
+                            let leftEyePointsCount = observation.landmarks?.leftEye?.pointCount
+                            let leftEyePath = UIBezierPath.init()
+                            
+                            for index in 0...(leftEyePointsCount! - 1) {
+                                let vectorPoint = observation.landmarks?.leftEye?.point(at: index)
+                                let point = CGPoint.init(x: CGFloat((vectorPoint?.x)!), y: CGFloat((vectorPoint?.y)!))
+                                if index == 0 {
+                                    leftEyePath.move(to:point)
+                                } else {
+                                    leftEyePath.addLine(to: point)
+                                }
+                            }
+                            
+                            let leftEyeRect = leftEyePath.cgPath.boundingBoxOfPath
+                            
+                            // Right Eye
+                            let rightEyePointsCount = observation.landmarks?.rightEye?.pointCount
+                            let rightEyePath = UIBezierPath.init()
+                            
+                            for index in 0...(rightEyePointsCount! - 1) {
+                                let vectorPoint = observation.landmarks?.rightEye?.point(at: index)
+                                let point = CGPoint.init(x: CGFloat((vectorPoint?.x)!), y: CGFloat((vectorPoint?.y)!))
+                                if index == 0 {
+                                    rightEyePath.move(to:point)
+                                } else {
+                                    rightEyePath.addLine(to: point)
+                                }
+                            }
+                            
+                            let rightEyeRect = rightEyePath.cgPath.boundingBoxOfPath
+                            
+                            let eyeCube = EyeCube(faceRect: observation.boundingBox, leftEyeRect: leftEyeRect, rightEyeRect: rightEyeRect)
+                            self.eyeRectArray.append(eyeCube)
+                            
+                            completionHandler(self.eyeRectArray)
+                        }
+                    } else {
+                        print("No Eyes Detected")
+                        completionHandler([])
+                    }
+                }
+            })
+            
+            do {
+                try requestHandler.perform([eyesRequest])
+            } catch {
+                print("error performing request")
+            }
+        }
+    }
+    
+    func addEyes(_ eyeCubes: [EyeCube]) {
+        for eyeCube in eyeCubes {
+            let faceRect = eyeCube.faceRect
+            let leftEyeRect = eyeCube.leftEyeRect
+            let rightEyeRect = eyeCube.rightEyeRect
+            
+            
+            self.drawEyeRect(leftEyeRect,faceRect: faceRect)
+            self.drawEyeRect(rightEyeRect,faceRect: faceRect)
+        }
+    }
+    
+    func drawEyeRect (_ rect: CGRect, faceRect: CGRect) {
+        
+        let image = self.imageView.image
+        
+        let imageSize = image?.size
+        let scale: CGFloat = 0
+        UIGraphicsBeginImageContextWithOptions(imageSize!, false, scale)
+        
+        image?.draw(at: .zero)
+        
+        if let context = UIGraphicsGetCurrentContext() {
+            let faceX = faceRect.origin.x * (imageSize?.width)!
+            let faceY = faceRect.origin.y * (imageSize?.height)!
+            let faceWidth = faceRect.size.width * (imageSize?.width)!
+            let faceHeight = faceRect.size.height * (imageSize?.height)!
+            
+            let convertedFaceRect = CGRect(x: faceX, y: faceY, width: faceWidth, height: faceHeight)
+            
+            let x = (rect.origin.x * (convertedFaceRect.width)) + convertedFaceRect.origin.x
+            let y = (rect.origin.y * (convertedFaceRect.height)) + convertedFaceRect.origin.y
+            let width = rect.size.width * (convertedFaceRect.width)
+            let height = rect.size.height * (convertedFaceRect.height)
+            
+            
+            let rectangle = CGRect(x: x, y: y, width: width, height: height)
+            rectangle.insetBy(dx: 10, dy: 10)
+            
+            context.translateBy(x: 0, y: (imageSize?.height)!)
+            context.scaleBy(x: 1, y: -1)
+            
+            context.setFillColor(UIColor.orange.cgColor)
+            context.setStrokeColor(UIColor.orange.cgColor)
+            context.setLineWidth(5)
+            context.addRect(rectangle)
+            context.fillEllipse(in: rectangle)
+        }
+        
+        let newImage = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        
+        self.imageView.image = newImage
+    }
+    
     func drawBoxes(_ coordinateBoxes: [FaceCube]) {
         for coordinates in coordinateBoxes {
             let image = self.imageView.image
@@ -243,6 +370,21 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         }
     }
     
+    @IBAction func eyeFun(_ sender: Any) {
+        self.spinner.color = .darkGray
+        self.spinner.startAnimating()
+        
+        DispatchQueue.main.async {
+            self.findEyesInImage() { (eyeRects: [EyeCube]) in
+                if eyeRects.count > 0 {
+                    self.addEyes(eyeRects)
+                    
+                    self.spinner.stopAnimating()
+                    self.spinner.color = .white
+                }
+            }
+        }
+    }
     func zoomRectForScale(scale: CGFloat, center: CGPoint) -> CGRect {
         var zoomRect = CGRect.zero
         zoomRect.size.height = imageView.frame.size.height / scale
