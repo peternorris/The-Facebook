@@ -24,6 +24,15 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     @IBOutlet var noFaceLabel: UILabel!
     @IBOutlet var scrollView: UIScrollView!
     
+    //Status Texts
+    let welcome = "Tap 'Select Image' to see the Vision API in play. 🤓"
+    let working = "🤔 Working on your selected image...👓"
+    let noFaceDetected = "🙁 We did not detect a face"
+    let aFaceDetected = "😱 Magic! "
+    let multipleFaceDetected = "😉 Multiple faces. Sneaky"
+    
+    
+    
     var coordinatesArray: [FaceCube] = []
     var rectArray: [CGRect] = []
     var faceZoomRect: CGRect!
@@ -41,9 +50,8 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         let image = info[UIImagePickerControllerOriginalImage] as! UIImage
         picker.dismiss(animated: true, completion: nil)
         
-        if self.noFaceLabel.textColor == .red {
-            self.noFaceLabel.textColor = .white
-        }
+        self.noFaceLabel.text = working
+        
         
         self.imageView.backgroundColor = .white
         self.imageView.image = image
@@ -57,11 +65,25 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
                 self.spinner.stopAnimating()
                 self.spinner.color = .white
                 
+                /*
                 if faceBoxes.count > 0 {
                     self.drawBoxes(faceBoxes)
                 } else {
                     self.noFaceLabel.textColor = .red
+                } */
+                
+                switch faceBoxes.count {
+                case _ where faceBoxes.count == 0 :
+                    self.noFaceLabel.text = self.noFaceDetected
+                case _ where faceBoxes.count == 1 :
+                    self.drawBoxes(faceBoxes)
+                    self.noFaceLabel.text = self.aFaceDetected
+                default :
+                    self.drawBoxes(faceBoxes)
+                    self.noFaceLabel.text = self.multipleFaceDetected
+                    print("Sean! What did you do!!!!")
                 }
+                
             }
         }
     }
@@ -165,7 +187,11 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
         
-        self.noFaceLabel.textColor = .white
+        navigationController?.navigationBar.prefersLargeTitles = true
+        
+        self.noFaceLabel.textColor = .black
+        self.noFaceLabel.text = "Tap 'Select Image' to see the Vision API in play."
+        self.imageView.image = UIImage(named:"Mystery-Person-Silhouette")
         self.imageView.contentMode = .scaleAspectFit
         self.spinner.color = .white
     }
